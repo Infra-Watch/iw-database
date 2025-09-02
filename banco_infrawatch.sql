@@ -35,7 +35,7 @@ CREATE TABLE cpu (
 );
 
 -- Leituras da CPU
-CREATE TABLE leitura_cpu (
+CREATE TABLE componentes (
   idLeitura INT PRIMARY KEY AUTO_INCREMENT,
   fkCpu INT NOT NULL,
   hostname VARCHAR(128),
@@ -55,8 +55,8 @@ CREATE TABLE leitura_cpu (
   cpu_temp_c FLOAT NULL,
   load_avg_1min FLOAT NULL,
   data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_leitura_cpu_fkCpu_data (fkCpu, data_hora),
-  CONSTRAINT fk_leitura_cpu FOREIGN KEY (fkCpu) REFERENCES cpu(idCpu)
+  INDEX idx_componentes_fkCpu_data (fkCpu, data_hora),
+  CONSTRAINT fk_componentes_cpu FOREIGN KEY (fkCpu) REFERENCES cpu(idCpu)
 );
 
 -- Parâmetros ideais de CPU
@@ -74,7 +74,7 @@ CREATE TABLE parametros_cpu (
   CONSTRAINT fk_parametros_cpu FOREIGN KEY (fkCpu) REFERENCES cpu(idCpu)
 );
 
--- Alertas
+-- Alertas (FK ajustada para 'componentes')
 CREATE TABLE alerta (
   idAlerta INT PRIMARY KEY AUTO_INCREMENT,
   fkLeitura INT NOT NULL,
@@ -83,6 +83,6 @@ CREATE TABLE alerta (
   statusAlerta CHAR(9) NOT NULL DEFAULT 'ABERTO',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_alerta_fk (fkCpu, fkLeitura),
-  CONSTRAINT fk_alerta_leitura FOREIGN KEY (fkLeitura) REFERENCES leitura_cpu(idLeitura),
+  CONSTRAINT fk_alerta_leitura FOREIGN KEY (fkLeitura) REFERENCES componentes(idLeitura),
   CONSTRAINT fk_alerta_cpu FOREIGN KEY (fkCpu) REFERENCES cpu(idCpu)
 );
