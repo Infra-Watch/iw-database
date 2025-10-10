@@ -5,8 +5,7 @@ CREATE TABLE IF NOT EXISTS representante_empresa (
     idRepresentante INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(45) NOT NULL,
     email VARCHAR(45) UNIQUE NOT NULL,
-    telefone VARCHAR(11) UNIQUE NOT NULL,
-    cargo VARCHAR(45) not null
+    telefone VARCHAR(11) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS empresa (
@@ -105,9 +104,9 @@ CREATE TABLE IF NOT EXISTS registro_coleta (
 
 -- INSERÇÃO DE DADOS
 
-INSERT INTO representante_empresa (idRepresentante, nome, email, telefone, cargo) VALUES
-(1, 'João da Silva', 'joao.silva@infrawatch.com', '11987654321', 'Gerente de Contas'),
-(2, 'Maria Oliveira', 'maria.oliver@gru.com', '21998765432', 'Diretora Técnica');
+INSERT INTO representante_empresa (idRepresentante, nome, email, telefone) VALUES
+(1, 'João da Silva', 'joao.silva@infrawatch.com', '11987654321'),
+(2, 'Maria Oliveira', 'maria.oliver@gru.com', '21998765432');
 
 INSERT INTO empresa (idEmpresa, razao_social, cnpj, nome_fantasia, fkRepresentante) VALUES
 (1000, 'Infrawatch LTDA.', '12345678900001', 'Infrawatch', 1),
