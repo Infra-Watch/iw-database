@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS registro_coleta (
     fkRecurso INT NOT NULL,
     fkMaquina INT NOT NULL,
     fkEmpresa INT NOT NULL,
-    leitura INT NOT NULL,
+    leitura FLOAT,
     data_hora DATETIME NOT NULL,
     FOREIGN KEY (fkRecurso) REFERENCES config_recurso(fkRecurso) ON DELETE CASCADE,
     FOREIGN KEY (fkMaquina) REFERENCES config_recurso(fkMaquina) ON DELETE CASCADE,
