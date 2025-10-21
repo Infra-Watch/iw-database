@@ -151,7 +151,7 @@ INSERT INTO recurso_monitorado (idRecurso, nome, descricao, unidade_de_medida) V
 (1009, 'transferencia_entrada_kbps', 'Kilobytes de entrada na rede', 'unidade'),
 (1010, 'transferencia_saida_kbps', 'Kilobytes de saida na rede', 'unidade'),
 (1011, 'processos', 'Quantidade de processos abertos', 'unidade'),
-(1012, 'serviços', 'Quantidade de seviços ativos', 'unidade'),
+(1012, 'servicos', 'Quantidade de seviços ativos', 'unidade'),
 (1013, 'threads', 'Quantidade de threads abertas', 'unidade');
 
 DELIMITER $$
@@ -186,9 +186,11 @@ $$ DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE inserir_captura_java(
+	mac_address VARCHAR(45),
 	servicos FLOAT,
 	processos FLOAT,
-	threads FLOAT)
+	threads FLOAT,
+    data_hora DATETIME)
 BEGIN
 	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM maquina WHERE mac_address = mac_address);
     DECLARE idMaquina INT DEFAULT (SELECT idMaquina FROM maquina WHERE mac_address = mac_address);
