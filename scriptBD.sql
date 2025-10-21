@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS maquina (
     fkEmpresa INT NOT NULL,
     status_maquina TINYINT NOT NULL,
     mac_address VARCHAR(45) NOT NULL,
+    apelido VARCHAR(100) NOT NULL,
     data_instalacao DATETIME,
     FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
 	CONSTRAINT pkCompostaMaquinaEmpresa PRIMARY KEY (idMaquina, fkEmpresa)
