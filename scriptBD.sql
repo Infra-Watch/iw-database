@@ -199,3 +199,43 @@ BEGIN
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1013, idMaquina, idEmpresa, threads, data_hora);
 END
 $$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE cadastrar_usuario(
+	nome VARCHAR(45),
+    email VARCHAR(100),
+    senha VARCHAR(255),
+    chave_acesso VARCHAR(45))
+BEGIN
+	DECLARE idCategoria INT DEFAULT (SELECT idCategoria_acesso FROM categoria_acesso WHERE chave_de_acesso = chave_acesso LIMIT 1);
+	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM categoria_acesso WHERE idCategoria_acesso = idCategoria LIMIT 1);
+    INSERT INTO usuario(fkEmpresa, nome, email, senha, fkCategoria_acesso) VALUE (idEmpresa, nome, email, sha2(senha, 0), idCategoria);
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE autenticar_usuario(
+	email VARCHAR(45),
+    senha VARCHAR(255)
+)
+BEGIN
+	SELECT
+		u.idUsuario AS idUsuario,
+        u.fkEmpresa AS idEmpresa,
+        u.fkCategoria_acesso AS idCategoria,
+        u.nome AS nome,
+        u.email AS email,
+        c.status_ativacao AS status_ativacao,
+        c.codigo_de_permissoes AS permissoes        
+    FROM usuario AS u
+    JOIN categoria_acesso AS c 
+		ON u.fkCategoria_acesso = c.idCategoria_acesso
+	WHERE
+		u.email = email AND
+        u.senha = sha2(senha, 0);
+END
+$$ DELIMITER ;
+
+CREATE USER 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
+GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
+FLUSH PRIVILEGES;
