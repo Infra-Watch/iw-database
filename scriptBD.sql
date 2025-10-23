@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS maquina (
     idMaquina INT AUTO_INCREMENT,
     fkEmpresa INT NOT NULL,
     status_maquina TINYINT NOT NULL,
-    mac_address VARCHAR(45) NOT NULL,
+    mac_address VARCHAR(45) NOT NULL UNIQUE,
     apelido VARCHAR(100) NOT NULL,
     data_instalacao DATETIME,
     FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
@@ -190,10 +190,14 @@ CREATE PROCEDURE inserir_captura_java(
 	servicos FLOAT,
 	processos FLOAT,
 	threads FLOAT,
+    transferencia_entrada_kbps FLOAT,
+    transferencia_saida_kbps FLOAT,
     data_hora DATETIME)
 BEGIN
 	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM maquina WHERE mac_address = mac_address);
     DECLARE idMaquina INT DEFAULT (SELECT idMaquina FROM maquina WHERE mac_address = mac_address);
+    INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1009, idMaquina, idEmpresa, transferencia_entrada_kbps, data_hora);
+    INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1010, idMaquina, idEmpresa, transferencia_saida_kbps, data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1011, idMaquina, idEmpresa, processos, data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1012, idMaquina, idEmpresa, serviços, data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1013, idMaquina, idEmpresa, threads, data_hora);
@@ -236,6 +240,38 @@ BEGIN
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE cadastrar_maquina(
+	idEmpresa INT,
+    mac_address VARCHAR(45),
+	apelido VARCHAR(100))
+BEGIN
+	DECLARE idMaquina INT;
+	INSERT INTO maquina(fkEmpresa, status_maquina, mac_address, apelido, data_instalacao) VALUE (idEmpresa, 1, mac_address, apelido, NOW());
+    SET idMaquina = (SELECT last_insert_id());
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1001, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1002, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1003, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1004, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1005, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1006, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1007, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1008, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1009, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1010, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1011, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1012, idMaquina, idEmpresa, 1);
+    INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1013, idMaquina, idEmpresa, 1);
+END
+$$ DELIMITER ;
+
+
 CREATE USER 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
+
+CREATE USER 'captura_python'@'%' IDENTIFIED BY 'pyInfrawatch1234';
+GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_python TO 'captura_python'@'%';
+
+CREATE USER 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
+GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
 FLUSH PRIVILEGES;
