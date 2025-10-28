@@ -33,13 +33,9 @@ CREATE TABLE IF NOT EXISTS endereco (
 CREATE TABLE IF NOT EXISTS categoria_acesso (
     idCategoria_acesso INT PRIMARY KEY AUTO_INCREMENT,
     fkEmpresa INT NOT NULL,
-    chave_de_acesso VARCHAR(45) UNIQUE NOT NULL,
-    status_ativacao TINYINT NOT NULL,
-    codigo_de_permissoes VARCHAR(45) NOT NULL,
     nome VARCHAR(45) NOT NULL,
     descricao VARCHAR(200) NOT NULL,
-    data_criacao DATETIME NOT NULL,
-    data_expiracao DATETIME NOT NULL,
+    codigo_de_permissoes VARCHAR(45) NOT NULL,
     FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE
 );
 
@@ -53,6 +49,20 @@ CREATE TABLE IF NOT EXISTS usuario (
     FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
     FOREIGN KEY (fkCategoria_acesso) REFERENCES categoria_acesso(idCategoria_acesso) ON DELETE SET NULL,
 	CONSTRAINT pkCompostaUsuarioEmpresa PRIMARY KEY (idUsuario, fkEmpresa)
+);
+
+CREATE TABLE IF NOT EXISTS chave_de_acesso (
+    idChave_de_acesso INT PRIMARY KEY AUTO_INCREMENT,
+    codigo VARCHAR(45) UNIQUE NOT NULL,
+    status_ativacao TINYINT NOT NULL,
+    data_criacao DATETIME NOT NULL,
+    data_expiracao DATETIME NOT NULL,
+    fkEmpresa INT NOT NULL,
+    fkUsuario INT,
+    fkCategoria_acesso INT,
+    FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
+    FOREIGN KEY (fkUsuario) REFERENCES usuario(idUsuario) ON DELETE CASCADE,
+    FOREIGN KEY (fkCategoria_acesso) REFERENCES categoria_acesso(idCategoria_acesso) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS maquina (
@@ -211,7 +221,9 @@ CREATE PROCEDURE cadastrar_usuario(
     senha VARCHAR(255),
     chave_acesso VARCHAR(45))
 BEGIN
-	DECLARE idCategoria INT DEFAULT (SELECT idCategoria_acesso FROM categoria_acesso WHERE chave_de_acesso = chave_acesso LIMIT 1);
+	DECLARE idCategoria INT DEFAULT (SELECT idCategoria_acesso FROM categoria_acesso AS cat 
+									JOIN chave_de_acesso AS chave ON cat.idCategoria_acesso = chave.fkCategoria_acesso 
+									WHERE codigo = chave_acesso LIMIT 1);
 	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM categoria_acesso WHERE idCategoria_acesso = idCategoria LIMIT 1);
     INSERT INTO usuario(fkEmpresa, nome, email, senha, fkCategoria_acesso) VALUE (idEmpresa, nome, email, sha2(senha, 0), idCategoria);
 END
@@ -229,7 +241,6 @@ BEGIN
         u.fkCategoria_acesso AS idCategoria,
         u.nome AS nome,
         u.email AS email,
-        c.status_ativacao AS status_ativacao,
         c.codigo_de_permissoes AS permissoes        
     FROM usuario AS u
     JOIN categoria_acesso AS c 
