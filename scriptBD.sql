@@ -57,9 +57,9 @@ CREATE TABLE IF NOT EXISTS chave_de_acesso (
     status_ativacao TINYINT NOT NULL,
     data_criacao DATETIME NOT NULL,
     data_expiracao DATETIME NOT NULL,
-    fkEmpresa INT NOT NULL,
+	fkCategoria_acesso INT NOT NULL,
+    fkEmpresa INT,
     fkUsuario INT,
-    fkCategoria_acesso INT,
     FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
     FOREIGN KEY (fkUsuario) REFERENCES usuario(idUsuario) ON DELETE CASCADE,
     FOREIGN KEY (fkCategoria_acesso) REFERENCES categoria_acesso(idCategoria_acesso) ON DELETE CASCADE
@@ -145,9 +145,13 @@ INSERT INTO representante (idRepresentante, nome, email, telefone, fkEmpresa) VA
 (1, 'João da Silva', 'joao.silva@infrawatch.com', '11987654321', 1000),
 (2, 'Maria Oliveira', 'maria.oliver@gru.com', '21998765432', 3000);
 
-INSERT INTO categoria_acesso (fkEmpresa, chave_de_acesso, status_ativacao, codigo_de_permissoes, nome, descricao, data_criacao, data_expiracao) VALUES
-(1000, '1AFG3K', 1, '1000', 'Funcionário Infrawatch', 'Permite acessar as telas de cadastro de empresa cliente', NOW(), '2050-01-01 00:00:00'),
-(3000, '4HJK1V', 1, '0111', 'Adm representante GRU', 'Permite acesso administrativo à empresa GRU', NOW(), '2050-01-01 00:00:00');
+INSERT INTO categoria_acesso (idCategoria_acesso, fkEmpresa, codigo_de_permissoes, nome, descricao) VALUES
+(1000, 1000, '1000', 'Funcionário Infrawatch', 'Permite acessar as telas de cadastro de empresa cliente'),
+(3000, 3000, '0111', 'Adm representante GRU', 'Permite acesso administrativo à empresa GRU');
+
+INSERT INTO chave_de_acesso (codigo, status_ativacao, data_criacao, data_expiracao, fkCategoria_acesso) VALUES
+('1AFG3K', 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), 1000),
+('4HJK1V', 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), 3000);
 
 INSERT INTO recurso_monitorado (idRecurso, nome, descricao, unidade_de_medida) VALUES
 (1001, 'cpu_uso_porcentagem', 'Porcentagem de uso de CPU', '%'),
@@ -158,8 +162,8 @@ INSERT INTO recurso_monitorado (idRecurso, nome, descricao, unidade_de_medida) V
 (1006, 'disco_uso_porcentagem', 'Porcentagem de uso de disco', '%'),
 (1007, 'disco_velocidade_escrita', 'Velocidade de escrita de disco', 'mbps'),
 (1008, 'disco_velocidade_leitura', 'Velocidade de leitura de disco', 'mbps'),
-(1009, 'transferencia_entrada_kbps', 'Kilobytes de entrada na rede', 'unidade'),
-(1010, 'transferencia_saida_kbps', 'Kilobytes de saida na rede', 'unidade'),
+(1009, 'transferencia_entrada_kbps', 'Kilobytes de entrada na rede', 'kbps'),
+(1010, 'transferencia_saida_kbps', 'Kilobytes de saida na rede', 'kbps'),
 (1011, 'processos', 'Quantidade de processos abertos', 'unidade'),
 (1012, 'servicos', 'Quantidade de seviços ativos', 'unidade'),
 (1013, 'threads', 'Quantidade de threads abertas', 'unidade');
@@ -225,7 +229,10 @@ BEGIN
 									JOIN chave_de_acesso AS chave ON cat.idCategoria_acesso = chave.fkCategoria_acesso 
 									WHERE codigo = chave_acesso LIMIT 1);
 	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM categoria_acesso WHERE idCategoria_acesso = idCategoria LIMIT 1);
+    DECLARE idUsuario INT;
     INSERT INTO usuario(fkEmpresa, nome, email, senha, fkCategoria_acesso) VALUE (idEmpresa, nome, email, sha2(senha, 0), idCategoria);
+    SET idUsuario = (SELECT last_insert_id());
+	UPDATE chave_de_acesso SET fkUsuario = idUsuario, fkEmpresa = idEmpresa, status_ativacao = 0 WHERE codigo = chave_acesso;
 END
 $$ DELIMITER ;
 
@@ -276,13 +283,34 @@ BEGIN
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE criar_categoria_acesso(
+	nome VARCHAR(45),
+    descricao VARCHAR(200),
+    codigo_de_permissoes VARCHAR(45),
+    idEmpresa INT
+)
+BEGIN
+	INSERT INTO categoria_acesso(nome, descricao, codigo_de_permissoes, fkEmpresa) VALUE (nome, descricao, codigo_de_permissoes, idEmpresa);
+END
+$$ DELIMITER ;
 
-CREATE USER 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
+DELIMITER $$
+CREATE PROCEDURE gerar_chave_de_acesso(
+	idCategoria_acesso INT
+)
+BEGIN
+	INSERT INTO chave_de_acesso(codigo, status_ativacao, data_criacao, data_expiracao, fkCategoria_acesso) VALUE (LEFT(MD5(RAND()), 8), 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), idCategoria_acesso);
+END
+$$ DELIMITER ;
+
+
+CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
 
-CREATE USER 'captura_python'@'%' IDENTIFIED BY 'pyInfrawatch1234';
+CREATE USER IF NOT EXISTS 'captura_python'@'%' IDENTIFIED BY 'pyInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_python TO 'captura_python'@'%';
 
-CREATE USER 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
+CREATE USER IF NOT EXISTS 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
 FLUSH PRIVILEGES;
