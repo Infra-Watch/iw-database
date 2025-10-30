@@ -169,7 +169,7 @@ INSERT INTO recurso_monitorado (idRecurso, nome, descricao, unidade_de_medida) V
 
 DELIMITER $$
 CREATE PROCEDURE inserir_captura_python(
-	mac_address VARCHAR(45),
+	v_mac_address VARCHAR(45),
     cpu_uso_porcentagem FLOAT,
     cpu_freq_mhz FLOAT,
     cpu_temp_c FLOAT,
@@ -182,8 +182,8 @@ CREATE PROCEDURE inserir_captura_python(
     transferencia_saida_kbps FLOAT,
     data_hora DATETIME)
 BEGIN
-	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM maquina WHERE mac_address = mac_address);
-    DECLARE idMaquina INT DEFAULT (SELECT idMaquina FROM maquina WHERE mac_address = mac_address);
+	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM maquina WHERE mac_address = v_mac_address);
+    DECLARE idMaquina INT DEFAULT (SELECT idMaquina FROM maquina WHERE mac_address = v_mac_address);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1001, idMaquina, idEmpresa, cpu_uso_porcentagem, data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1002, idMaquina, idEmpresa, cpu_freq_mhz,data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1003, idMaquina, idEmpresa, cpu_temp_c, data_hora);
