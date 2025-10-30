@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS INFRAWATCH;
-USE INFRAWATCH;
+CREATE DATABASE IF NOT EXISTS infrawatch;
+USE infrawatch;
 
 CREATE TABLE IF NOT EXISTS empresa (
     idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
@@ -60,8 +60,7 @@ CREATE TABLE IF NOT EXISTS chave_de_acesso (
 	fkCategoria_acesso INT NOT NULL,
     fkEmpresa INT,
     fkUsuario INT,
-    FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
-    FOREIGN KEY (fkUsuario) REFERENCES usuario(idUsuario) ON DELETE CASCADE,
+    FOREIGN KEY (fkEmpresa, fkUsuario) REFERENCES usuario(fkEmpresa, idUsuario) ON DELETE CASCADE,
     FOREIGN KEY (fkCategoria_acesso) REFERENCES categoria_acesso(idCategoria_acesso) ON DELETE CASCADE
 );
 
@@ -200,7 +199,7 @@ $$ DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE inserir_captura_java(
-	mac_address VARCHAR(45),
+	v_mac_address VARCHAR(45),
 	servicos FLOAT,
 	processos FLOAT,
 	threads FLOAT,
@@ -208,8 +207,8 @@ CREATE PROCEDURE inserir_captura_java(
     transferencia_saida_kbps FLOAT,
     data_hora DATETIME)
 BEGIN
-	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM maquina WHERE mac_address = mac_address);
-    DECLARE idMaquina INT DEFAULT (SELECT idMaquina FROM maquina WHERE mac_address = mac_address);
+	DECLARE idEmpresa INT DEFAULT (SELECT fkEmpresa FROM maquina WHERE mac_address = v_mac_address);
+    DECLARE idMaquina INT DEFAULT (SELECT idMaquina FROM maquina WHERE mac_address = v_mac_address);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1009, idMaquina, idEmpresa, transferencia_entrada_kbps, data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1010, idMaquina, idEmpresa, transferencia_saida_kbps, data_hora);
     INSERT INTO registro_coleta (fkRecurso, fkMaquina, fkEmpresa, leitura, data_hora) VALUE (1011, idMaquina, idEmpresa, processos, data_hora);
@@ -303,7 +302,6 @@ BEGIN
 	INSERT INTO chave_de_acesso(codigo, status_ativacao, data_criacao, data_expiracao, fkCategoria_acesso) VALUE (LEFT(MD5(RAND()), 8), 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), idCategoria_acesso);
 END
 $$ DELIMITER ;
-
 
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
