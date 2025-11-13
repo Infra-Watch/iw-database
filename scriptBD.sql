@@ -245,12 +245,15 @@ BEGIN
 		u.idUsuario AS idUsuario,
         u.fkEmpresa AS idEmpresa,
         u.fkCategoria_acesso AS idCategoria,
+        u.nome AS nome_usuario,
         u.nome AS nome,
-        u.email AS email,
+        e.nome_fantasia AS nome_empresa,
         c.codigo_de_permissoes AS permissoes        
     FROM usuario AS u
     JOIN categoria_acesso AS c 
 		ON u.fkCategoria_acesso = c.idCategoria_acesso
+    JOIN empresa AS e
+        ON u.fkEmpresa = e.idEmpresa
 	WHERE
 		u.email = email AND
         u.senha = sha2(senha, 0);
