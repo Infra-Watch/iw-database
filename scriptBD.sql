@@ -267,7 +267,8 @@ CREATE PROCEDURE cadastrar_maquina(
 	apelido VARCHAR(100))
 BEGIN
 	DECLARE idMaquina INT;
-	INSERT INTO maquina(fkEmpresa, status_maquina, mac_address, apelido, data_instalacao) VALUE (idEmpresa, 1, mac_address, apelido, NOW());
+	INSERT INTO maquina(fkEmpresa, status_maquina, mac_address, apelido, data_instalacao) VALUE (idEmpresa, 1, replace(replace(mac_address, ":", ""), "-", ""), apelido, NOW());
+    -- puxa o id que acabou de ser criado 
     SET idMaquina = (SELECT last_insert_id());
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1001, idMaquina, idEmpresa, 1);
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1002, idMaquina, idEmpresa, 1);
@@ -315,3 +316,5 @@ GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_python TO 'captura_python'
 CREATE USER IF NOT EXISTS 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
 FLUSH PRIVILEGES;
+
+
