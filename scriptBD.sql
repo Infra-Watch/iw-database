@@ -307,6 +307,33 @@ BEGIN
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE buscar_maquinas(
+	idEmpresa INT
+)
+BEGIN
+	SELECT
+		m.apelido AS nome_maquina,
+		m.mac_address AS mac_address,
+		m.status_maquina AS ativacao,
+		COALESCE(COUNT(a.idAlerta), 0) AS qtd_alertas_24h
+	FROM 
+		maquina AS m
+	LEFT JOIN registro_coleta AS c 
+		ON (c.fkMaquina, c.fkEmpresa) = (m.idMaquina, m.fkEmpresa)
+		AND c.data_hora > DATE_SUB(NOW(), INTERVAL 1 DAY)
+	LEFT JOIN alerta AS a 
+		ON (a.fkColeta, a.fkRecurso, a.fkMaquina, a.fkEmpresa) = (c.idColeta, c.fkRecurso, c.fkMaquina, c.fkEmpresa)
+	WHERE 
+		m.fkEmpresa = idEmpresa 
+	GROUP BY 
+		m.idMaquina, 
+		m.apelido, 
+		m.mac_address, 
+		m.status_maquina;
+END
+$$ DELIMITER ;
+
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
 
@@ -316,5 +343,3 @@ GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_python TO 'captura_python'
 CREATE USER IF NOT EXISTS 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
 FLUSH PRIVILEGES;
-
-
