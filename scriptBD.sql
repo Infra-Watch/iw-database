@@ -334,6 +334,20 @@ BEGIN
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE buscar_kpis_geral(idEmpresa INT, intervalo INT)
+BEGIN
+SELECT
+	(SELECT COUNT(idMaquina) FROM maquina WHERE fkEmpresa = idEmpresa AND status_maquina) AS maquinas_ativas, 
+    (SELECT COUNT(idMaquina)FROM maquina WHERE fkEmpresa = idEmpresa) AS maquinas_totais ,
+    (SELECT IFNULL(SUM(leitura), 0) FROM registro_coleta WHERE fkRecurso IN (1009, 1010) AND fkEmpresa = idEmpresa AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)) AS trafego_total_24h,
+    (SELECT COUNT(idAlerta) FROM alerta AS a JOIN registro_coleta AS c 
+		ON (a.fkColeta, a.fkRecurso, a.fkMaquina, a.fkEmpresa) = (c.idColeta, c.fkRecurso, c.fkMaquina, c.fkEmpresa)
+		WHERE a.fkEmpresa = idEmpresa AND c.data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)) AS total_alertas,
+	IFNULL((SELECT apelido FROM maquina WHERE idMaquina = (SELECT fkMaquina FROM alerta WHERE fkEmpresa = idEmpresa GROUP BY fkMaquina HAVING COUNT(idAlerta) > 4 ORDER BY COUNT(idAlerta) DESC LIMIT 1)), 'Nenhuma') AS nome_maquina;
+END
+$$ DELIMITER ;
+
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
 
