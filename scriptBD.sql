@@ -348,6 +348,32 @@ SELECT
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE buscar_alertas(idEmpresa INT, intervalo INT)
+BEGIN
+SELECT 
+	idAlerta,
+	a.mensagem,
+    CONCAT(c.leitura, r.unidade_de_medida) AS leitura,
+    IF(a.nivel = 2, 'Crítico', 'Atenção') AS nivel_label,
+    a.nivel AS nivel_num,
+	r.descricao AS componente,
+    m.apelido AS maquina,
+    data_hora
+    FROM alerta AS a
+	JOIN registro_coleta AS c
+		ON (a.fkColeta, a.fkRecurso, a.fkMaquina, a.fkEmpresa) = (c.idColeta, c.fkRecurso, c.fkMaquina, c.fkEmpresa)
+	JOIN maquina AS m
+		ON (c.fkMaquina, c.fkEmpresa) = (m.idMaquina, m.fkEmpresa)
+	JOIN recurso_monitorado AS r
+		ON c.fkRecurso = r.idRecurso
+	WHERE a.fkEmpresa = idEmpresa
+		AND c.data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+	ORDER BY c.data_hora DESC, nivel_num DESC, idAlerta;
+END
+$$ DELIMITER ;
+
+
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
 
