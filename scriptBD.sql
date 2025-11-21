@@ -402,6 +402,7 @@ CREATE PROCEDURE buscar_maquinas(
 )
 BEGIN
 	SELECT
+		idMaquina,
 		m.apelido AS nome_maquina,
 		m.mac_address AS mac_address,
 		m.status_maquina AS ativacao,
