@@ -8,6 +8,14 @@ CREATE TABLE IF NOT EXISTS empresa (
     nome_fantasia VARCHAR(100)
 );
 
+CREATE TABLE IF NOT EXISTS slack(
+   idSlack INT PRIMARY KEY AUTO_INCREMENT,
+   canal VARCHAR(45),
+   fkEmpresa INT,
+   CONSTRAINT fkEmpresaSlack
+	FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa)
+);
+
 CREATE TABLE IF NOT EXISTS representante(
     idRepresentante INT AUTO_INCREMENT,
 	fkEmpresa INT NOT NULL, 
