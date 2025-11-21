@@ -264,11 +264,11 @@ DELIMITER $$
 CREATE PROCEDURE buscar_empresas_geral()
 BEGIN
 	SELECT
-		nome_fantasia,
-		cnpj,
-		r.nome AS nome_representante,
-		idEmpresa,
-		GROUP_CONCAT(ch.codigo SEPARATOR ',') AS chave_acesso_adm 
+		IFNULL(nome_fantasia, '') AS nome_fantasia,
+		IFNULL(CASE WHEN LENGTH(cnpj) = 14 THEN CONCAT(SUBSTRING(cnpj, 1, 2), '.', SUBSTRING(cnpj, 3, 3), '.', SUBSTRING(cnpj, 6, 3), '/', SUBSTRING(cnpj, 9, 4), '-', SUBSTRING(cnpj, 13, 2)) ELSE cnpj END, '') AS cnpj,
+		IFNULL(r.nome, '') AS nome_representante,
+		IFNULL(idEmpresa, '') AS idEmpresa,
+		IFNULL(MIN(ch.codigo), '') AS chave_acesso_adm
 	FROM empresa AS e
 		LEFT JOIN representante AS r
 			ON r.fkEmpresa = e.idEmpresa 
@@ -288,19 +288,19 @@ CREATE PROCEDURE buscar_empresa(
 )
 BEGIN
 	SELECT
-		idEmpresa,
-		razao_social,
-		cnpj,
-		nome_fantasia,
-		r.nome AS nome_representante,
-		r.email AS email_representante,
-		r.telefone AS telefone_representante,
-		cep,
-		numero,
-		complemento,
-		cidade,
-		estado,
-		GROUP_CONCAT(ch.codigo SEPARATOR ',') AS chave_acesso_adm 
+		IFNULL(idEmpresa, '') AS idEmpresa,
+		IFNULL(razao_social, '') AS razao_social,
+		IFNULL(CASE WHEN LENGTH(cnpj) = 14 THEN CONCAT(SUBSTRING(cnpj, 1, 2), '.', SUBSTRING(cnpj, 3, 3), '.', SUBSTRING(cnpj, 6, 3), '/', SUBSTRING(cnpj, 9, 4), '-', SUBSTRING(cnpj, 13, 2)) ELSE cnpj END, '') AS cnpj,
+		IFNULL(nome_fantasia, '') AS nome_fantasia,
+		IFNULL(r.nome, '') AS nome_representante,
+		IFNULL(r.email, '') AS email_representante,
+		IFNULL(r.telefone, '') AS telefone_representante,
+		IFNULL(cep, '') AS cep,
+		IFNULL(numero, '') AS numero,
+		IFNULL(complemento, '') AS complemento,
+		IFNULL(cidade, '') AS cidade,
+		IFNULL(estado, '') AS estado,
+		IFNULL(GROUP_CONCAT(ch.codigo SEPARATOR ','), '') AS chave_acesso_adm
 	FROM empresa AS e
 		LEFT JOIN representante AS r
 			ON r.fkEmpresa = e.idEmpresa 
@@ -323,7 +323,6 @@ CREATE PROCEDURE cadastrar_maquina(
 BEGIN
 	DECLARE idMaquina INT;
 	INSERT INTO maquina(fkEmpresa, status_maquina, mac_address, apelido, data_instalacao) VALUE (idEmpresa, 1, replace(replace(mac_address, ":", ""), "-", ""), apelido, NOW());
-    -- puxa o id que acabou de ser criado 
     SET idMaquina = (SELECT last_insert_id());
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1001, idMaquina, idEmpresa, 1);
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1002, idMaquina, idEmpresa, 1);
