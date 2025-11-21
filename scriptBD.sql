@@ -269,6 +269,33 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE cadastrar_empresa (
+	razaosocial VARCHAR(100),
+    nomefantasia VARCHAR(100), 
+    cnpj CHAR(14), 
+    estado VARCHAR(45), 
+    cidade VARCHAR(45), 
+    cep CHAR(8), 
+    numero VARCHAR(10), 
+    complemento VARCHAR(45), 
+    nome VARCHAR(45), 
+    email VARCHAR(45), 
+    telefone VARCHAR(11)
+)
+BEGIN
+	DECLARE idEmpresa INT;
+    DECLARE idCategoria_acesso INT;
+    INSERT INTO empresa (razao_social, cnpj, nome_fantasia) VALUE (razaosocial, cnpj, nomefantasia);
+    SET idEmpresa = (SELECT last_insert_id());
+    INSERT INTO representante (fkEmpresa, nome, email, telefone) VALUE (idEmpresa, nome, email, telefone);
+    INSERT INTO endereco (fkEmpresa, cep, numero, complemento, cidade, estado) VALUE (idEmpresa, cep, numero, complemento, cidade, estado);
+    INSERT INTO categoria_acesso (nome, descricao, codigo_de_permissoes, fkEmpresa) VALUE ('Admininstrador', 'Permite acesso administrativo', '0111', idEmpresa);
+    SET idCategoria_acesso = (SELECT last_insert_id());
+    CALL gerar_chave_de_acesso(idCategoria_acesso);
+END
+$$ DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE buscar_empresas_geral()
 BEGIN
 	SELECT
