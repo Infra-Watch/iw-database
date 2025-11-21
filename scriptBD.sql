@@ -372,6 +372,32 @@ BEGIN
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1011, idMaquina, idEmpresa, 1);
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1012, idMaquina, idEmpresa, 1);
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1013, idMaquina, idEmpresa, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1001, idMaquina, idEmpresa, 90.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1001, idMaquina, idEmpresa, 85.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1002, idMaquina, idEmpresa, 3000.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1002, idMaquina, idEmpresa, 3500.0, 2);
+	INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1003, idMaquina, idEmpresa, 90.0, 1);
+	INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1003, idMaquina, idEmpresa, 80.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1004, idMaquina, idEmpresa, 90.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1004, idMaquina, idEmpresa, 85.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1005, idMaquina, idEmpresa, 1.7, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1005, idMaquina, idEmpresa, 1.5, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1006, idMaquina, idEmpresa, 90.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1006, idMaquina, idEmpresa, 80.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1007, idMaquina, idEmpresa, 250.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1007, idMaquina, idEmpresa, 300.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1008, idMaquina, idEmpresa, 300.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1008, idMaquina, idEmpresa, 350.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1009, idMaquina, idEmpresa, 35.0000, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1009, idMaquina, idEmpresa, 40.0000, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1010, idMaquina, idEmpresa, 25.0000, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1010, idMaquina, idEmpresa, 30.0000, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1011, idMaquina, idEmpresa, 350.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1011, idMaquina, idEmpresa, 320.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1012, idMaquina, idEmpresa, 200.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1012, idMaquina, idEmpresa, 150.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1013, idMaquina, idEmpresa, 4000.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1013, idMaquina, idEmpresa, 4500.0, 2);
 END
 $$ DELIMITER ;
 
@@ -402,7 +428,6 @@ CREATE PROCEDURE buscar_maquinas(
 )
 BEGIN
 	SELECT
-		idMaquina,
 		m.apelido AS nome_maquina,
 		m.mac_address AS mac_address,
 		m.status_maquina AS ativacao,
@@ -468,7 +493,7 @@ CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
 
 CREATE USER IF NOT EXISTS 'captura_python'@'%' IDENTIFIED BY 'pyInfrawatch1234';
-GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_python TO 'captura_python'@'%';
+GRANT ALL PRIVILEGES ON infrawatch.* TO 'captura_python'@'%';
 
 CREATE USER IF NOT EXISTS 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
