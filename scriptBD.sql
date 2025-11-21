@@ -261,6 +261,61 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE buscar_empresas_geral()
+BEGIN
+	SELECT
+		nome_fantasia,
+		cnpj,
+		r.nome AS nome_representante,
+		idEmpresa,
+		GROUP_CONCAT(ch.codigo SEPARATOR ',') AS chave_acesso_adm 
+	FROM empresa AS e
+		LEFT JOIN representante AS r
+			ON r.fkEmpresa = e.idEmpresa 
+		LEFT JOIN endereco AS a
+			ON a.fkEmpresa = e.idEmpresa
+		LEFT JOIN categoria_acesso AS ct
+			ON ct.fkEmpresa = e.idEmpresa AND codigo_de_permissoes = '0111'
+		LEFT JOIN chave_de_acesso AS ch
+			ON ch.fkCategoria_acesso = ct.idCategoria_acesso
+	GROUP BY idEmpresa, idRepresentante, idEndereco, idCategoria_acesso;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE buscar_empresa(
+	v_idEmpresa INT
+)
+BEGIN
+	SELECT
+		idEmpresa,
+		razao_social,
+		cnpj,
+		nome_fantasia,
+		r.nome AS nome_representante,
+		r.email AS email_representante,
+		r.telefone AS telefone_representante,
+		cep,
+		numero,
+		complemento,
+		cidade,
+		estado,
+		GROUP_CONCAT(ch.codigo SEPARATOR ',') AS chave_acesso_adm 
+	FROM empresa AS e
+		LEFT JOIN representante AS r
+			ON r.fkEmpresa = e.idEmpresa 
+		LEFT JOIN endereco AS a
+			ON a.fkEmpresa = e.idEmpresa
+		LEFT JOIN categoria_acesso AS ct
+			ON ct.fkEmpresa = e.idEmpresa AND codigo_de_permissoes = '0111'
+		LEFT JOIN chave_de_acesso AS ch
+			ON ch.fkCategoria_acesso = ct.idCategoria_acesso
+    WHERE idEmpresa = v_idEmpresa
+	GROUP BY idEmpresa, idRepresentante, idEndereco, idCategoria_acesso;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE cadastrar_maquina(
 	idEmpresa INT,
     mac_address VARCHAR(45),
