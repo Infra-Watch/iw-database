@@ -414,6 +414,35 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE buscar_categoria_acesso(
+    idEmpresa INT
+)
+BEGIN
+SELECT
+	idCategoria_acesso,
+    cat.nome AS categoria,
+    descricao,
+    codigo_de_permissoes AS permissoes,
+	CONCAT('[',
+	GROUP_CONCAT(
+		JSON_OBJECT(
+			"idChave", idChave_de_acesso,
+			"funcionario", u.nome,
+            "email", u.email,
+            "codigo", codigo,
+            "status", status_ativacao,
+            "expiracao", data_expiracao)),
+	']') AS chaves_geradas
+FROM categoria_acesso AS cat
+	LEFT JOIN chave_de_acesso AS ch
+		ON fkCategoria_acesso = idCategoria_acesso
+	LEFT JOIN usuario AS u
+	ON fkUsuario = idUsuario
+GROUP BY idCategoria_acesso;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE gerar_chave_de_acesso(
 	idCategoria_acesso INT
 )
