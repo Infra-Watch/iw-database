@@ -438,6 +438,7 @@ FROM categoria_acesso AS cat
 		ON fkCategoria_acesso = idCategoria_acesso
 	LEFT JOIN usuario AS u
 	ON fkUsuario = idUsuario
+WHERE cat.fkEmpresa = idEmpresa
 GROUP BY idCategoria_acesso;
 END
 $$ DELIMITER ;
