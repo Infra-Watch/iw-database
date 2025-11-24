@@ -518,6 +518,45 @@ SELECT
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE buscar_componentes(
+	vidEmpresa INT,
+    vidMaquina INT,
+    intervalo INT)
+BEGIN
+SELECT
+	idRecurso AS idComponente,
+	nome,
+    descricao,
+    status_de_monitoramento AS ativacao,
+    unidade_de_medida,
+	CONCAT('[',
+	GROUP_CONCAT(
+		DISTINCT JSON_OBJECT(
+			"idParametro", idParametro,
+			"valor", p.valor,
+            "nivel", p.nivel)),
+	']') AS parametros,
+	CONCAT('[',
+	GROUP_CONCAT(
+		DISTINCT JSON_OBJECT(
+			"idLeitura", idColeta,
+			"valor", l.leitura,
+            "data_hora", l.data_hora)),
+	']') AS leituras
+FROM recurso_monitorado AS r
+	LEFT JOIN config_recurso AS c 
+		ON r.idRecurso = c.fkRecurso
+	LEFT JOIN parametro AS p
+		ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+	LEFT JOIN registro_coleta AS l
+		ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa) AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY) 
+WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina)
+GROUP BY idRecurso, status_de_monitoramento
+ORDER BY idRecurso;
+END
+$$ DELIMITER ;
+
 
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
