@@ -269,8 +269,27 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
-CREATE PROCEDURE cadastrar_empresa (
-	razaosocial VARCHAR(100),
+CREATE PROCEDURE atualizar_usuario(
+    p_idUsuario INT,
+    p_fkCategoria_acesso INT,
+    p_nome VARCHAR(45),
+    p_email VARCHAR(100),
+    p_senha VARCHAR(255)
+)
+BEGIN
+    UPDATE usuario
+    SET 
+        fkCategoria_acesso = IF(p_fkCategoria_acesso IS NOT NULL, p_fkCategoria_acesso, fkCategoria_acesso),
+        nome = IF(p_nome IS NOT NULL, p_nome, nome),
+        email = IF(p_email IS NOT NULL, p_email, email),
+        senha = IF(p_senha IS NOT NULL, sha2(p_senha, 0), senha)
+    WHERE idUsuario = p_idUsuario;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE cadastrar_empresa(
+    razaosocial VARCHAR(100),
     nomefantasia VARCHAR(100), 
     cnpj CHAR(14), 
     estado VARCHAR(45), 
@@ -283,17 +302,26 @@ CREATE PROCEDURE cadastrar_empresa (
     telefone VARCHAR(11)
 )
 BEGIN
-	DECLARE idEmpresa INT;
+    DECLARE idEmpresa INT;
     DECLARE idCategoria_acesso INT;
-    INSERT INTO empresa (razao_social, cnpj, nome_fantasia) VALUE (razaosocial, cnpj, nomefantasia);
-    SET idEmpresa = (SELECT last_insert_id());
-    INSERT INTO representante (fkEmpresa, nome, email, telefone) VALUE (idEmpresa, nome, email, telefone);
-    INSERT INTO endereco (fkEmpresa, cep, numero, complemento, cidade, estado) VALUE (idEmpresa, cep, numero, complemento, cidade, estado);
-    INSERT INTO categoria_acesso (nome, descricao, codigo_de_permissoes, fkEmpresa) VALUE ('Admininstrador', 'Permite acesso administrativo', '0111', idEmpresa);
-    SET idCategoria_acesso = (SELECT last_insert_id());
-    CALL gerar_chave_de_acesso(idCategoria_acesso);
-END
-$$ DELIMITER ;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+		INSERT INTO empresa (razao_social, cnpj, nome_fantasia) VALUES (razaosocial, cnpj, nomefantasia);
+		SET idEmpresa = LAST_INSERT_ID();
+		INSERT INTO representante (fkEmpresa, nome, email, telefone) VALUES (idEmpresa, nome, email, telefone);
+		INSERT INTO endereco (fkEmpresa, cep, numero, complemento, cidade, estado) VALUES (idEmpresa, cep, numero, complemento, cidade, estado);
+		INSERT INTO categoria_acesso (nome, descricao, codigo_de_permissoes, fkEmpresa) VALUES ('Admininstrador', 'Permite acesso administrativo', '0111', idEmpresa);
+		SET idCategoria_acesso = LAST_INSERT_ID();
+		CALL gerar_chave_de_acesso(idCategoria_acesso);
+    COMMIT;
+END$$
+DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE buscar_empresas_geral()
@@ -349,6 +377,45 @@ BEGIN
 	GROUP BY idEmpresa, idRepresentante, idEndereco, idCategoria_acesso;
 END
 $$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE atualizar_empresa(
+    p_idEmpresa INT,
+    p_razao_social VARCHAR(100),
+    p_cnpj CHAR(14),
+    p_nome_fantasia VARCHAR(100),
+    p_nome_representante VARCHAR(45),
+    p_email VARCHAR(45),
+    p_telefone VARCHAR(11),
+    p_cep CHAR(8),
+    p_numero VARCHAR(10),
+    p_complemento VARCHAR(45),
+    p_cidade VARCHAR(45),
+    p_estado VARCHAR(45)
+)
+BEGIN
+    UPDATE empresa
+    SET 
+        razao_social = IF(p_razao_social IS NOT NULL, p_razao_social, razao_social),
+        cnpj = IF(p_cnpj IS NOT NULL, p_cnpj, cnpj),
+        nome_fantasia = IF(p_nome_fantasia IS NOT NULL, p_nome_fantasia, nome_fantasia)
+    WHERE idEmpresa = p_idEmpresa;
+    UPDATE representante
+    SET 
+        nome = IF(p_nome_representante IS NOT NULL, p_nome_representante, nome),
+        email = IF(p_email IS NOT NULL, p_email, email),
+        telefone = IF(p_telefone IS NOT NULL, p_telefone, telefone)
+    WHERE fkEmpresa = p_idEmpresa;
+    UPDATE endereco
+    SET 
+        cep = IF(p_cep IS NOT NULL, p_cep, cep),
+        numero = IF(p_numero IS NOT NULL, p_numero, numero),
+        complemento = IF(p_complemento IS NOT NULL, p_complemento, complemento),
+        cidade = IF(p_cidade IS NOT NULL, p_cidade, cidade),
+        estado = IF(p_estado IS NOT NULL, p_estado, estado)
+    WHERE fkEmpresa = p_idEmpresa;
+END$$
+DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE cadastrar_maquina(
