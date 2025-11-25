@@ -269,8 +269,27 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
-CREATE PROCEDURE cadastrar_empresa (
-	razaosocial VARCHAR(100),
+CREATE PROCEDURE atualizar_usuario(
+    p_idUsuario INT,
+    p_fkCategoria_acesso INT,
+    p_nome VARCHAR(45),
+    p_email VARCHAR(100),
+    p_senha VARCHAR(255)
+)
+BEGIN
+    UPDATE usuario
+    SET 
+        fkCategoria_acesso = IF(p_fkCategoria_acesso IS NOT NULL, p_fkCategoria_acesso, fkCategoria_acesso),
+        nome = IF(p_nome IS NOT NULL, p_nome, nome),
+        email = IF(p_email IS NOT NULL, p_email, email),
+        senha = IF(p_senha IS NOT NULL, sha2(p_senha, 0), senha)
+    WHERE idUsuario = p_idUsuario;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE cadastrar_empresa(
+    razaosocial VARCHAR(100),
     nomefantasia VARCHAR(100), 
     cnpj CHAR(14), 
     estado VARCHAR(45), 
@@ -283,17 +302,26 @@ CREATE PROCEDURE cadastrar_empresa (
     telefone VARCHAR(11)
 )
 BEGIN
-	DECLARE idEmpresa INT;
+    DECLARE idEmpresa INT;
     DECLARE idCategoria_acesso INT;
-    INSERT INTO empresa (razao_social, cnpj, nome_fantasia) VALUE (razaosocial, cnpj, nomefantasia);
-    SET idEmpresa = (SELECT last_insert_id());
-    INSERT INTO representante (fkEmpresa, nome, email, telefone) VALUE (idEmpresa, nome, email, telefone);
-    INSERT INTO endereco (fkEmpresa, cep, numero, complemento, cidade, estado) VALUE (idEmpresa, cep, numero, complemento, cidade, estado);
-    INSERT INTO categoria_acesso (nome, descricao, codigo_de_permissoes, fkEmpresa) VALUE ('Admininstrador', 'Permite acesso administrativo', '0111', idEmpresa);
-    SET idCategoria_acesso = (SELECT last_insert_id());
-    CALL gerar_chave_de_acesso(idCategoria_acesso);
-END
-$$ DELIMITER ;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+		INSERT INTO empresa (razao_social, cnpj, nome_fantasia) VALUES (razaosocial, cnpj, nomefantasia);
+		SET idEmpresa = LAST_INSERT_ID();
+		INSERT INTO representante (fkEmpresa, nome, email, telefone) VALUES (idEmpresa, nome, email, telefone);
+		INSERT INTO endereco (fkEmpresa, cep, numero, complemento, cidade, estado) VALUES (idEmpresa, cep, numero, complemento, cidade, estado);
+		INSERT INTO categoria_acesso (nome, descricao, codigo_de_permissoes, fkEmpresa) VALUES ('Admininstrador', 'Permite acesso administrativo', '0111', idEmpresa);
+		SET idCategoria_acesso = LAST_INSERT_ID();
+		CALL gerar_chave_de_acesso(idCategoria_acesso);
+    COMMIT;
+END$$
+DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE buscar_empresas_geral()
@@ -351,6 +379,45 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE atualizar_empresa(
+    p_idEmpresa INT,
+    p_razao_social VARCHAR(100),
+    p_cnpj CHAR(14),
+    p_nome_fantasia VARCHAR(100),
+    p_nome_representante VARCHAR(45),
+    p_email VARCHAR(45),
+    p_telefone VARCHAR(11),
+    p_cep CHAR(8),
+    p_numero VARCHAR(10),
+    p_complemento VARCHAR(45),
+    p_cidade VARCHAR(45),
+    p_estado VARCHAR(45)
+)
+BEGIN
+    UPDATE empresa
+    SET 
+        razao_social = IF(p_razao_social IS NOT NULL, p_razao_social, razao_social),
+        cnpj = IF(p_cnpj IS NOT NULL, p_cnpj, cnpj),
+        nome_fantasia = IF(p_nome_fantasia IS NOT NULL, p_nome_fantasia, nome_fantasia)
+    WHERE idEmpresa = p_idEmpresa;
+    UPDATE representante
+    SET 
+        nome = IF(p_nome_representante IS NOT NULL, p_nome_representante, nome),
+        email = IF(p_email IS NOT NULL, p_email, email),
+        telefone = IF(p_telefone IS NOT NULL, p_telefone, telefone)
+    WHERE fkEmpresa = p_idEmpresa;
+    UPDATE endereco
+    SET 
+        cep = IF(p_cep IS NOT NULL, p_cep, cep),
+        numero = IF(p_numero IS NOT NULL, p_numero, numero),
+        complemento = IF(p_complemento IS NOT NULL, p_complemento, complemento),
+        cidade = IF(p_cidade IS NOT NULL, p_cidade, cidade),
+        estado = IF(p_estado IS NOT NULL, p_estado, estado)
+    WHERE fkEmpresa = p_idEmpresa;
+END$$
+DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE cadastrar_maquina(
 	idEmpresa INT,
     mac_address VARCHAR(45),
@@ -372,6 +439,32 @@ BEGIN
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1011, idMaquina, idEmpresa, 1);
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1012, idMaquina, idEmpresa, 1);
     INSERT INTO config_recurso (fkRecurso, fkMaquina, fkEmpresa, status_de_monitoramento) VALUE (1013, idMaquina, idEmpresa, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1001, idMaquina, idEmpresa, 90.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1001, idMaquina, idEmpresa, 85.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1002, idMaquina, idEmpresa, 3000.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1002, idMaquina, idEmpresa, 3500.0, 2);
+	INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1003, idMaquina, idEmpresa, 90.0, 1);
+	INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1003, idMaquina, idEmpresa, 80.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1004, idMaquina, idEmpresa, 90.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1004, idMaquina, idEmpresa, 85.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1005, idMaquina, idEmpresa, 1.7, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1005, idMaquina, idEmpresa, 1.5, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1006, idMaquina, idEmpresa, 90.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1006, idMaquina, idEmpresa, 80.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1007, idMaquina, idEmpresa, 250.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1007, idMaquina, idEmpresa, 300.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1008, idMaquina, idEmpresa, 300.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1008, idMaquina, idEmpresa, 350.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1009, idMaquina, idEmpresa, 35.0000, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1009, idMaquina, idEmpresa, 40.0000, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1010, idMaquina, idEmpresa, 25.0000, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1010, idMaquina, idEmpresa, 30.0000, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1011, idMaquina, idEmpresa, 350.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1011, idMaquina, idEmpresa, 320.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1012, idMaquina, idEmpresa, 200.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1012, idMaquina, idEmpresa, 150.0, 2);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1013, idMaquina, idEmpresa, 4000.0, 1);
+    INSERT INTO parametro (fkRecurso, fkMaquina, fkEmpresa, valor, nivel) VALUES (1013, idMaquina, idEmpresa, 4500.0, 2);
 END
 $$ DELIMITER ;
 
@@ -384,6 +477,36 @@ CREATE PROCEDURE criar_categoria_acesso(
 )
 BEGIN
 	INSERT INTO categoria_acesso(nome, descricao, codigo_de_permissoes, fkEmpresa) VALUE (nome, descricao, codigo_de_permissoes, idEmpresa);
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE buscar_categoria_acesso(
+    idEmpresa INT
+)
+BEGIN
+SELECT
+	idCategoria_acesso,
+    cat.nome AS categoria,
+    descricao,
+    codigo_de_permissoes AS permissoes,
+	CONCAT('[',
+	GROUP_CONCAT(
+		JSON_OBJECT(
+			"idChave", idChave_de_acesso,
+			"funcionario", u.nome,
+            "email", u.email,
+            "codigo", codigo,
+            "status", status_ativacao,
+            "expiracao", data_expiracao)),
+	']') AS chaves_geradas
+FROM categoria_acesso AS cat
+	LEFT JOIN chave_de_acesso AS ch
+		ON fkCategoria_acesso = idCategoria_acesso
+	LEFT JOIN usuario AS u
+	ON fkUsuario = idUsuario
+WHERE cat.fkEmpresa = idEmpresa
+GROUP BY idCategoria_acesso;
 END
 $$ DELIMITER ;
 
@@ -462,12 +585,51 @@ SELECT
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE buscar_componentes(
+	vidEmpresa INT,
+    vidMaquina INT,
+    intervalo INT)
+BEGIN
+SELECT
+	idRecurso AS idComponente,
+	nome,
+    descricao,
+    status_de_monitoramento AS ativacao,
+    unidade_de_medida,
+	CONCAT('[',
+	GROUP_CONCAT(
+		DISTINCT JSON_OBJECT(
+			"idParametro", idParametro,
+			"valor", p.valor,
+            "nivel", p.nivel)),
+	']') AS parametros,
+	CONCAT('[',
+	GROUP_CONCAT(
+		DISTINCT JSON_OBJECT(
+			"idLeitura", idColeta,
+			"valor", l.leitura,
+            "data_hora", l.data_hora)),
+	']') AS leituras
+FROM recurso_monitorado AS r
+	LEFT JOIN config_recurso AS c 
+		ON r.idRecurso = c.fkRecurso
+	LEFT JOIN parametro AS p
+		ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+	LEFT JOIN registro_coleta AS l
+		ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa) AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY) 
+WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina)
+GROUP BY idRecurso, status_de_monitoramento
+ORDER BY idRecurso;
+END
+$$ DELIMITER ;
+
 
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
 
 CREATE USER IF NOT EXISTS 'captura_python'@'%' IDENTIFIED BY 'pyInfrawatch1234';
-GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_python TO 'captura_python'@'%';
+GRANT ALL PRIVILEGES ON infrawatch.* TO 'captura_python'@'%';
 
 CREATE USER IF NOT EXISTS 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
