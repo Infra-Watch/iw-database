@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS empresa (
 
 CREATE TABLE IF NOT EXISTS slack(
    idSlack INT PRIMARY KEY AUTO_INCREMENT,
-   canal VARCHAR(45),
-   fkEmpresa INT,
+   canal VARCHAR(45) NOT NULL,
+   fkEmpresa INT NOT NULL,
    CONSTRAINT fkEmpresaSlack
 	FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa)
 );
