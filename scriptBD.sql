@@ -478,6 +478,38 @@ END
 $$ DELIMITER ;
 
 DELIMITER $$
+CREATE PROCEDURE atualizar_maquina(
+    p_idEmpresa INT,
+    p_idMaquina INT,
+    p_status_maquina TINYINT,
+    p_mac_address VARCHAR(45),
+    p_apelido VARCHAR(100)
+)
+BEGIN
+    UPDATE maquina
+    SET 
+        status_maquina = IF(p_status_maquina IS NOT NULL, p_status_maquina, status_maquina),
+        mac_address = IF(p_mac_address IS NOT NULL, p_mac_address, mac_address),
+        apelido = IF(p_apelido IS NOT NULL, p_apelido, apelido)
+    WHERE idMaquina = p_idMaquina
+      AND fkEmpresa = p_idEmpresa;
+END
+$$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE remover_maquina(
+    p_idEmpresa INT,
+    p_idMaquina INT
+)
+BEGIN
+    DELETE FROM maquina
+    WHERE idMaquina = p_idMaquina
+      AND fkEmpresa = p_idEmpresa;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE criar_categoria_acesso(
 	nome VARCHAR(45),
     descricao VARCHAR(200),
@@ -486,6 +518,38 @@ CREATE PROCEDURE criar_categoria_acesso(
 )
 BEGIN
 	INSERT INTO categoria_acesso(nome, descricao, codigo_de_permissoes, fkEmpresa) VALUE (nome, descricao, codigo_de_permissoes, idEmpresa);
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE atualizar_categoria_acesso(
+    p_idEmpresa INT,
+    p_idCategoria_acesso INT,
+    p_nome VARCHAR(45),
+    p_descricao VARCHAR(200),
+    p_codigo_de_permissoes VARCHAR(45)
+)
+BEGIN
+    UPDATE categoria_acesso
+    SET 
+        nome = IF(p_nome IS NOT NULL, p_nome, nome),
+        descricao = IF(p_descricao IS NOT NULL, p_descricao, descricao),
+        codigo_de_permissoes = IF(p_codigo_de_permissoes IS NOT NULL, p_codigo_de_permissoes, codigo_de_permissoes)
+    WHERE idCategoria_acesso = p_idCategoria_acesso
+      AND fkEmpresa = p_idEmpresa;
+END
+$$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE remover_categoria_acesso(
+    p_idEmpresa INT,
+    p_idCategoria_acesso INT
+)
+BEGIN
+    DELETE FROM categoria_acesso
+    WHERE idCategoria_acesso = p_idCategoria_acesso
+      AND fkEmpresa = p_idEmpresa;
 END
 $$ DELIMITER ;
 
@@ -633,6 +697,28 @@ ORDER BY idRecurso;
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE TRIGGER gerar_alerta AFTER INSERT ON registro_coleta FOR EACH ROW
+	BEGIN
+    DECLARE parametroCritico FLOAT DEFAULT (SELECT valor FROM parametro 
+											WHERE fkRecurso = new.fkRecurso 
+											AND fkMaquina = new.fkMaquina
+                                            AND fkEmpresa = new.fkEmpresa AND
+                                            nivel = 2);
+    DECLARE parametroAtencao FLOAT DEFAULT (SELECT valor FROM parametro 
+											WHERE fkRecurso = new.fkRecurso 
+											AND fkMaquina = new.fkMaquina
+                                            AND fkEmpresa = new.fkEmpresa AND
+                                            nivel = 1);
+	IF new.leitura >= parametroCritico THEN
+			INSERT INTO alerta(fkColeta, fkRecurso, fkMaquina, fkEmpresa, mensagem, nivel) 
+				VALUE (new.idColeta, new.fkRecurso, new.fkMaquina, new.fkEmpresa, 'Alerta Crítico', 2);
+	ELSEIF new.leitura >= parametroAtencao THEN
+				INSERT INTO alerta(fkColeta, fkRecurso, fkMaquina, fkEmpresa, mensagem, nivel) 
+				VALUE (new.idColeta, new.fkRecurso, new.fkMaquina, new.fkEmpresa, 'Alerta Atençao', 1);
+	END IF;
+END
+$$ DELIMITER ;
 
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
