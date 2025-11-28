@@ -704,12 +704,16 @@ CREATE TRIGGER gerar_alerta AFTER INSERT ON registro_coleta FOR EACH ROW
 											WHERE fkRecurso = new.fkRecurso 
 											AND fkMaquina = new.fkMaquina
                                             AND fkEmpresa = new.fkEmpresa AND
-                                            nivel = 2);
+                                            nivel = 2
+                                            ORDER BY valor DESC
+                                            LIMIT 1);
     DECLARE parametroAtencao FLOAT DEFAULT (SELECT valor FROM parametro 
 											WHERE fkRecurso = new.fkRecurso 
 											AND fkMaquina = new.fkMaquina
                                             AND fkEmpresa = new.fkEmpresa AND
-                                            nivel = 1);
+                                            nivel = 1
+                                            ORDER BY valor DESC
+                                            LIMIT 1);
 	IF new.leitura >= parametroCritico THEN
 			INSERT INTO alerta(fkColeta, fkRecurso, fkMaquina, fkEmpresa, mensagem, nivel) 
 				VALUE (new.idColeta, new.fkRecurso, new.fkMaquina, new.fkEmpresa, 'Alerta Crítico', 2);
