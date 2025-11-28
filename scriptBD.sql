@@ -4,7 +4,7 @@ USE infrawatch;
 CREATE TABLE IF NOT EXISTS empresa (
     idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
     razao_social VARCHAR(100) NOT NULL,
-    cnpj CHAR(14) UNIQUE NOT NULL,
+    cnpj VARCHAR(45) UNIQUE NOT NULL,
     nome_fantasia VARCHAR(100)
 );
 
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS representante(
 	fkEmpresa INT NOT NULL, 
 	nome VARCHAR(45) NOT NULL,
     email VARCHAR(45) UNIQUE NOT NULL,
-    telefone VARCHAR(11) UNIQUE NOT NULL,
+    telefone VARCHAR(45) UNIQUE NOT NULL,
     FOREIGN KEY (fkEmpresa) REFERENCES empresa(idEmpresa) ON DELETE CASCADE,
     CONSTRAINT pkCompostaRepresentanteEmpresa PRIMARY KEY (idRepresentante, fkEmpresa)
 );
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS representante(
 CREATE TABLE IF NOT EXISTS endereco (
     idEndereco INT AUTO_INCREMENT,
     fkEmpresa INT NOT NULL,
-    cep CHAR(8) NOT NULL,
+    cep CHAR(45) NOT NULL,
     numero VARCHAR(10) NOT NULL,
     complemento VARCHAR(45),
     cidade VARCHAR(45) NOT NULL,
@@ -382,12 +382,12 @@ DELIMITER $$
 CREATE PROCEDURE atualizar_empresa(
     p_idEmpresa INT,
     p_razao_social VARCHAR(100),
-    p_cnpj CHAR(14),
+    p_cnpj CHAR(45),
     p_nome_fantasia VARCHAR(100),
     p_nome_representante VARCHAR(45),
     p_email VARCHAR(45),
-    p_telefone VARCHAR(11),
-    p_cep CHAR(8),
+    p_telefone VARCHAR(45),
+    p_cep VARCHAR(45),
     p_numero VARCHAR(10),
     p_complemento VARCHAR(45),
     p_cidade VARCHAR(45),
@@ -416,6 +416,15 @@ BEGIN
     WHERE fkEmpresa = p_idEmpresa;
 END$$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE remover_empresa(
+	v_idEmpresa INT
+)
+BEGIN
+	DELETE FROM empresa WHERE idEmpresa = v_idEmpresa;
+END
+$$ DELIMITER ;
 
 DELIMITER $$
 CREATE PROCEDURE cadastrar_maquina(
