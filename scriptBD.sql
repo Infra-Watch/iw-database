@@ -725,7 +725,7 @@ END
 $$ DELIMITER ;
 
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
-GRANT EXECUTE ON infrawatch.* TO 'api_webdataviz'@'%';
+GRANT ALL PRIVILEGES ON infrawatch.* TO 'api_webdataviz'@'%';
 
 CREATE USER IF NOT EXISTS 'captura_python'@'%' IDENTIFIED BY 'pyInfrawatch1234';
 GRANT ALL PRIVILEGES ON infrawatch.* TO 'captura_python'@'%';
