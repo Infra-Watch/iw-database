@@ -142,39 +142,6 @@ CREATE TABLE IF NOT EXISTS alerta (
 	CONSTRAINT pkCompostaAlerta PRIMARY KEY (idAlerta, fkColeta, fkRecurso, fkMaquina, fkEmpresa)
 );
 
--- INSERÇÃO DE DADOS
-
-INSERT INTO empresa (idEmpresa, razao_social, cnpj, nome_fantasia) VALUES
-(1000, 'Infrawatch LTDA.', '12345678900001', 'Infrawatch'),
-(3000, 'GRU Tecnologia S.A.', '98765432100001', 'GRU');
-
-INSERT INTO representante (idRepresentante, nome, email, telefone, fkEmpresa) VALUES
-(1, 'João da Silva', 'joao.silva@infrawatch.com', '11987654321', 1000),
-(2, 'Maria Oliveira', 'maria.oliver@gru.com', '21998765432', 3000);
-
-INSERT INTO categoria_acesso (idCategoria_acesso, fkEmpresa, codigo_de_permissoes, nome, descricao) VALUES
-(1000, 1000, '1000', 'Funcionário Infrawatch', 'Permite acessar as telas de cadastro de empresa cliente'),
-(3000, 3000, '0111', 'Adm representante GRU', 'Permite acesso administrativo à empresa GRU');
-
-INSERT INTO chave_de_acesso (codigo, status_ativacao, data_criacao, data_expiracao, fkCategoria_acesso) VALUES
-('1AFG3K', 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), 1000),
-('4HJK1V', 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), 3000);
-
-INSERT INTO recurso_monitorado (idRecurso, nome, descricao, unidade_de_medida) VALUES
-(1001, 'cpu_uso_porcentagem', 'Porcentagem de uso de CPU', '%'),
-(1002, 'cpu_freq_mhz', 'Frequência de CPU', 'Hz'),
-(1003, 'cpu_temp_c', 'Temperatura média de CPU', 'Hz'),
-(1004, 'ram_uso_porcentagem', 'Porcentagem de uso de RAM', '%'),
-(1005, 'ram_uso_gb', 'Gigabytes em uso de RAM', '%'),
-(1006, 'disco_uso_porcentagem', 'Porcentagem de uso de disco', '%'),
-(1007, 'disco_velocidade_escrita', 'Velocidade de escrita de disco', 'mbps'),
-(1008, 'disco_velocidade_leitura', 'Velocidade de leitura de disco', 'mbps'),
-(1009, 'transferencia_entrada_kbps', 'Kilobytes de entrada na rede', 'kbps'),
-(1010, 'transferencia_saida_kbps', 'Kilobytes de saida na rede', 'kbps'),
-(1011, 'processos', 'Quantidade de processos abertos', 'unidade'),
-(1012, 'servicos', 'Quantidade de seviços ativos', 'unidade'),
-(1013, 'threads', 'Quantidade de threads abertas', 'unidade');
-
 DELIMITER $$
 CREATE PROCEDURE inserir_captura_python(
 	v_mac_address VARCHAR(45),
@@ -598,6 +565,7 @@ CREATE PROCEDURE buscar_maquinas(
 )
 BEGIN
 	SELECT
+		idMaquina,
 		m.apelido AS nome_maquina,
 		m.mac_address AS mac_address,
 		m.status_maquina AS ativacao,
@@ -681,7 +649,7 @@ SELECT
 	GROUP_CONCAT(
 		DISTINCT JSON_OBJECT(
 			"idLeitura", idColeta,
-			"valor", l.leitura,
+			"valor", ROUND(l.leitura, 2),
             "data_hora", l.data_hora)),
 	']') AS leituras
 FROM recurso_monitorado AS r
@@ -877,3 +845,54 @@ GRANT ALL PRIVILEGES ON infrawatch.* TO 'captura_python'@'%';
 CREATE USER IF NOT EXISTS 'captura_java'@'%' IDENTIFIED BY 'jarInfrawatch1234';
 GRANT EXECUTE ON PROCEDURE infrawatch.inserir_captura_java TO 'captura_java'@'%';
 FLUSH PRIVILEGES;
+
+-- INSERÇÃO DE DADOS
+CALL cadastrar_empresa(
+	'Infrawatch LTDA.',
+    'Infrawatch',
+    '12345678900001',
+    'SP',
+    'São Paulo',
+    '14140001',
+	'595',
+    '4B',
+    '',
+    '',
+    ''
+);
+CALL cadastrar_empresa(
+	'SPT Tecnologia S.A.',
+    'SPT',
+    '98765432100001',
+    'SP',
+    'São Paulo',
+    '15150001',
+	'11',
+    '',
+    'Mariana',
+    'mariana@spt.airport.com',
+    '11'
+);
+
+INSERT INTO categoria_acesso (idCategoria_acesso, fkEmpresa, codigo_de_permissoes, nome, descricao) VALUES
+(1000, 1, '1000', 'Funcionário Infrawatch', 'Permite acessar as telas de cadastro de empresa cliente');
+
+INSERT INTO chave_de_acesso (codigo, status_ativacao, data_criacao, data_expiracao, fkCategoria_acesso) VALUES
+('1AFG3K', 1, NOW(), date_add(NOW(), INTERVAL 7 DAY), 1000);
+
+INSERT INTO recurso_monitorado (idRecurso, nome, descricao, unidade_de_medida) VALUES
+(1001, 'cpu_uso_porcentagem', 'Porcentagem de uso de CPU', '%'),
+(1002, 'cpu_freq_mhz', 'Frequência de CPU', 'Hz'),
+(1003, 'cpu_temp_c', 'Temperatura média de CPU', 'Hz'),
+(1004, 'ram_uso_porcentagem', 'Porcentagem de uso de RAM', '%'),
+(1005, 'ram_uso_gb', 'Gigabytes em uso de RAM', '%'),
+(1006, 'disco_uso_porcentagem', 'Porcentagem de uso de disco', '%'),
+(1007, 'disco_velocidade_escrita', 'Velocidade de escrita de disco', 'mbps'),
+(1008, 'disco_velocidade_leitura', 'Velocidade de leitura de disco', 'mbps'),
+(1009, 'transferencia_entrada_kbps', 'Kilobytes de entrada na rede', 'kbps'),
+(1010, 'transferencia_saida_kbps', 'Kilobytes de saida na rede', 'kbps'),
+(1011, 'processos', 'Quantidade de processos abertos', 'unidade'),
+(1012, 'servicos', 'Quantidade de seviços ativos', 'unidade'),
+(1013, 'threads', 'Quantidade de threads abertas', 'unidade');
+
+CALL cadastrar_maquina(2, '0afff799028b', 'FDPS - EC2');
