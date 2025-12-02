@@ -724,6 +724,150 @@ CREATE TRIGGER gerar_alerta AFTER INSERT ON registro_coleta FOR EACH ROW
 END
 $$ DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE buscar_redeMaquina(
+	idMaquina INT,
+    idEmpresa INT
+)
+BEGIN
+	SELECT 
+		ROUND(e.leitura + s.leitura, 2) AS throughput
+	FROM
+		registro_coleta AS e
+			JOIN
+		registro_coleta AS s ON e.data_hora = s.data_hora
+			AND s.fkRecurso = 1010
+	WHERE
+		e.fkRecurso = 1009 AND
+        fkMaquina = idMaquina AND
+        fkEmpresa = idEmpresa
+	ORDER BY e.data_hora DESC
+	LIMIT 1;
+
+	SELECT 
+		AVG(e.leitura) AS entradaMedia,
+		AVG(s.leitura) AS saidaMedia,
+		MAX(e.leitura) AS entradaMaxima,
+		MAX(s.leitura) AS saidaMaxima
+	FROM
+		registro_coleta AS e
+			JOIN
+		registro_coleta AS s ON e.data_hora = s.data_hora
+			AND s.fkRecurso = 1010
+	WHERE
+		e.fkRecurso = 1009 AND
+        fkMaquina = idMaquina AND
+        fkEmpresa = idEmpresa
+	GROUP BY e.fkRecurso , s.fkRecurso;
+    
+	SELECT 
+		leitura, data_hora
+	FROM
+		registro_coleta
+	WHERE
+		fkRecurso = 1009 AND
+        fkMaquina = idMaquina AND
+        fkEmpresa = idEmpresa
+	ORDER BY data_hora DESC;
+
+	SELECT 
+		leitura, data_hora
+	FROM
+		registro_coleta
+	WHERE
+		fkRecurso = 1010 AND
+        fkMaquina = idMaquina AND
+        fkEmpresa = idEmpresa
+	ORDER BY data_hora DESC;
+    
+    SELECT 
+		HOUR(e.data_hora) AS hora,
+		e.leitura AS kbpsEntrada,
+		s.leitura AS kbpsSaida
+	FROM
+		registro_coleta AS e
+			JOIN
+		registro_coleta AS s ON e.data_hora = s.data_hora
+			AND s.fkRecurso = 1010
+	WHERE
+		e.fkRecurso = 1009 AND
+        e.fkMaquina = idMaquina AND
+        e.fkEmpresa = idEmpresa
+	ORDER BY hora
+	LIMIT 43200
+	;
+END
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE buscar_redeTotal(
+    idEmpresa INT
+)
+BEGIN
+	SELECT 
+		ROUND(e.leitura + s.leitura, 2) AS throughput
+	FROM
+		registro_coleta AS e
+			JOIN
+		registro_coleta AS s ON e.data_hora = s.data_hora
+			AND s.fkRecurso = 1010
+	WHERE
+		e.fkRecurso = 1009 AND
+        fkEmpresa = idEmpresa
+	ORDER BY e.data_hora DESC
+	LIMIT 1;
+
+	SELECT 
+		AVG(e.leitura) AS entradaMedia,
+		AVG(s.leitura) AS saidaMedia,
+		MAX(e.leitura) AS entradaMaxima,
+		MAX(s.leitura) AS saidaMaxima
+	FROM
+		registro_coleta AS e
+			JOIN
+		registro_coleta AS s ON e.data_hora = s.data_hora
+			AND s.fkRecurso = 1010
+	WHERE
+		e.fkRecurso = 1009 AND
+        fkEmpresa = idEmpresa
+	GROUP BY e.fkRecurso , s.fkRecurso;
+
+	SELECT 
+		leitura, data_hora
+	FROM
+		registro_coleta
+	WHERE
+		fkRecurso = 1009 AND
+        fkEmpresa = idEmpresa
+	ORDER BY data_hora DESC;
+
+	SELECT 
+		leitura, data_hora
+	FROM
+		registro_coleta
+	WHERE
+		fkRecurso = 1010 AND
+        fkEmpresa = idEmpresa
+	ORDER BY data_hora DESC;
+    
+    SELECT 
+		HOUR(e.data_hora) AS hora,
+		e.leitura AS kbpsEntrada,
+		s.leitura AS kbpsSaida
+	FROM
+		registro_coleta AS e
+			JOIN
+		registro_coleta AS s ON e.data_hora = s.data_hora
+			AND s.fkRecurso = 1010
+	WHERE
+		e.fkRecurso = 1009 AND
+        e.fkEmpresa = idEmpresa
+	ORDER BY hora
+	LIMIT 43200
+	;
+END
+$$ DELIMITER ;
+
 CREATE USER IF NOT EXISTS 'api_webdataviz'@'%' IDENTIFIED BY 'infrawatch1234';
 GRANT ALL PRIVILEGES ON infrawatch.* TO 'api_webdataviz'@'%';
 
