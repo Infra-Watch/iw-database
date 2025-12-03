@@ -936,8 +936,8 @@ BEGIN
 			AND s.fkRecurso = 1010
 	WHERE
 		e.fkRecurso = 1009 AND
-        fkMaquina = idMaquina AND
-        fkEmpresa = idEmpresa
+        e.fkMaquina = idMaquina AND
+        e.fkEmpresa = idEmpresa
 	ORDER BY e.data_hora DESC
 	LIMIT 1;
 
@@ -953,10 +953,10 @@ BEGIN
 			AND s.fkRecurso = 1010
 	WHERE
 		e.fkRecurso = 1009 AND
-        fkMaquina = idMaquina AND
-        fkEmpresa = idEmpresa
+        e.fkMaquina = idMaquina AND
+        e.fkEmpresa = idEmpresa
 	GROUP BY e.fkRecurso , s.fkRecurso;
-    
+
 	SELECT 
 		leitura, data_hora
 	FROM
@@ -1010,7 +1010,7 @@ BEGIN
 			AND s.fkRecurso = 1010
 	WHERE
 		e.fkRecurso = 1009 AND
-        fkEmpresa = idEmpresa
+        e.fkEmpresa = idEmpresa
 	ORDER BY e.data_hora DESC
 	LIMIT 1;
 
@@ -1026,7 +1026,7 @@ BEGIN
 			AND s.fkRecurso = 1010
 	WHERE
 		e.fkRecurso = 1009 AND
-        fkEmpresa = idEmpresa
+        e.fkEmpresa = idEmpresa
 	GROUP BY e.fkRecurso , s.fkRecurso;
 
 	SELECT 
