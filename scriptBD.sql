@@ -632,36 +632,265 @@ CREATE PROCEDURE buscar_componentes(
     vidMaquina INT,
     intervalo INT)
 BEGIN
-SELECT
-	idRecurso AS idComponente,
-	nome,
-    descricao,
-    status_de_monitoramento AS ativacao,
-    unidade_de_medida,
-	CONCAT('[',
-	GROUP_CONCAT(
-		DISTINCT JSON_OBJECT(
-			"idParametro", idParametro,
-			"valor", p.valor,
-            "nivel", p.nivel)),
-	']') AS parametros,
-	CONCAT('[',
-	GROUP_CONCAT(
-		DISTINCT JSON_OBJECT(
-			"idLeitura", idColeta,
-			"valor", ROUND(l.leitura, 2),
-            "data_hora", l.data_hora)),
-	']') AS leituras
-FROM recurso_monitorado AS r
-	LEFT JOIN config_recurso AS c 
-		ON r.idRecurso = c.fkRecurso
-	LEFT JOIN parametro AS p
-		ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
-	LEFT JOIN registro_coleta AS l
-		ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa) AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY) 
-WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina)
-GROUP BY idRecurso, status_de_monitoramento
-ORDER BY idRecurso;
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1001
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1001
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1001 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1002
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1002
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1002 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1003
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1003
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1003 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1004
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1004
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1004 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1005
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1005
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1005 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1006
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1006
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1006 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1007
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1007
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1007 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1008
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1008
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1008 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1009
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1009
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1009 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1010
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1010
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1010 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1011
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1011
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1011 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1012
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1012
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1012 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
+
+    SELECT idRecurso AS idComponente, nome, descricao, status_de_monitoramento AS ativacao, unidade_de_medida
+    FROM recurso_monitorado AS r
+        LEFT JOIN config_recurso AS c ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND idRecurso = 1013
+    GROUP BY idRecurso, status_de_monitoramento
+    ORDER BY idRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idParametro, p.valor, p.nivel
+    FROM config_recurso AS c
+        INNER JOIN parametro AS p ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (p.fkRecurso, p.fkMaquina, p.fkEmpresa)
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1013
+    ORDER BY c.fkRecurso;
+
+    SELECT c.fkRecurso AS idComponente, idColeta AS idLeitura, ROUND(l.leitura, 2) AS valor, l.data_hora
+    FROM config_recurso AS c
+        INNER JOIN registro_coleta AS l ON (c.fkRecurso, c.fkMaquina, c.fkEmpresa) = (l.fkRecurso, l.fkMaquina, l.fkEmpresa)
+        INNER JOIN recurso_monitorado AS r ON r.idRecurso = c.fkRecurso
+    WHERE (c.fkEmpresa, c.fkMaquina) = (vidEmpresa, vidMaquina) AND c.fkRecurso = 1013 AND data_hora > DATE_SUB(NOW(), INTERVAL intervalo DAY)
+    ORDER BY c.fkRecurso;
 END
 $$ DELIMITER ;
 
